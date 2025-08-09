@@ -21,6 +21,9 @@ class Shader
 		Shader(const char* vertex_filepath, const char* fragment_filepath);
 		Shader(std::vector<const char*> shader_plaintext);
 
+		void AddGeometryShader(const char* geometry_filepath);
+		void AddGeometryShader(std::vector<const char*> geometry_plaintext);
+
 		void Activate() const;
 		void SetBool(const std::string& name, bool value) const;
 		void SetInt(const std::string& name, int value) const;

@@ -119,6 +119,48 @@ Shader::Shader(std::vector<const char*> shader_plaintext)
 	ID = shader;
 }
 
+void Shader::AddGeometryShader(const char* geometry_filepath)
+{
+	unsigned int geometryModule = create_module(geometry_filepath, GL_GEOMETRY_SHADER);
+	glAttachShader(ID, geometryModule);
+	glLinkProgram(ID);
+	int success;
+	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		char errorLog[1024];
+		glGetShaderInfoLog(ID, 1024, NULL, errorLog);
+		std::cout << "Geometry Shader linking failed: \n" << errorLog << std::endl;
+	}
+	glDeleteShader(geometryModule);
+}
+
+void Shader::AddGeometryShader(std::vector<const char*> geometry_plaintext)
+{
+	unsigned int geometryModule = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(geometryModule, 1, &geometry_plaintext[0], NULL);
+	glCompileShader(geometryModule);
+	int success;
+	glGetShaderiv(geometryModule, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		char errorLog[1024];
+		glGetShaderInfoLog(geometryModule, 1024, NULL, errorLog);
+		std::cout << "Geometry Shader Module compilation failed: \n" << errorLog << std::endl;
+	}
+
+	glAttachShader(ID, geometryModule);
+	glLinkProgram(ID);
+	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		char errorLog[1024];
+		glGetShaderInfoLog(ID, 1024, NULL, errorLog);
+		std::cout << "Geometry Shader linking failed: \n" << errorLog << std::endl;
+	}
+	glDeleteShader(geometryModule);
+}
+
 void Shader::Activate() const
 {
 	glUseProgram(ID);

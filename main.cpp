@@ -131,7 +131,7 @@ std::vector<GLuint> CreateCubeMap()
 
 void DrawSkyBox(GLuint textureID, GLuint VBO, GLuint VAO, Shader skyboxShader)
 {
-	glDepthMask(GL_FALSE); // Disable depth writing
+	glDepthFunc(GL_LEQUAL); 
 	skyboxShader.Activate();
 	skyboxShader.SetInt("skybox", 0);
 
@@ -145,7 +145,7 @@ void DrawSkyBox(GLuint textureID, GLuint VBO, GLuint VAO, Shader skyboxShader)
 	glBindVertexArray(VAO);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glDepthMask(GL_TRUE); // Disable depth writing
+	glDepthFunc(GL_LESS);
 }
 
 int main()
@@ -155,9 +155,9 @@ int main()
 
 	#pragma region INITIALIZE SCENE
 	Shader shader("../OpenGL/shaders/vertex.vert", "../OpenGL/shaders/fragment.frag");
+	Shader reflectiveShader("../OpenGL/shaders/reflective_vertex.vert", "../OpenGL/shaders/reflective_fragment.frag");
 	Shader ds("../OpenGL/shaders/default_vertex.vert", "../OpenGL/shaders/default_fragment.frag");
 	Shader lightShader("../OpenGL/shaders/light_vertex.vert", "../OpenGL/shaders/light_fragment.frag");
-
 
 	Texture diffuse("../OpenGL/textures/container2.png", true, true);
 	Texture specular("../OpenGL/textures/container2_specular.png", true, true);
@@ -168,6 +168,75 @@ int main()
 	shader.SetInt("material.specular", 1);
 	shader.SetFloat("material.shininess", 32.0f);
 
+	const char* testVertexShaderSource = R"(
+		#version 330 core
+		layout(location = 0) in vec3 aPos;
+		layout(location = 1) in vec3 aNormal;
+
+		out VS_OUT
+		{
+			vec3 normal;
+		} vs_out;	
+
+		uniform mat4 view;
+		uniform mat4 model;
+
+		void main()
+		{
+			gl_Position = view * model * vec4(aPos, 1.0); 
+			mat3 normalMatrix = mat3(transpose(inverse(view * model)));
+			vs_out.normal = normalize(vec3(vec4(normalMatrix * aNormal, 0.0)));
+		}
+	)";
+
+	const char* testGeometryShaderSource = R"(
+		#version 330 core
+		layout(triangles) in;
+		layout(line_strip, max_vertices = 6) out;
+		in VS_OUT
+		{
+			vec3 normal;
+		} gs_in[];
+
+		const float MAGNITUDE = 0.4;
+
+		uniform mat4 projection;
+
+		void GenerateLine(int index)
+		{
+			gl_Position = projection * gl_in[index].gl_Position;
+			EmitVertex();
+			gl_Position = projection * (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE);	
+			EmitVertex();	
+			EndPrimitive();
+		}
+
+		void main()
+		{
+			GenerateLine(0);
+			GenerateLine(1);
+			GenerateLine(2);
+		}
+	)";
+
+	const char* testFragmentShaderSource = R"(
+		#version 330 core
+		out vec4 FragColor;
+		void main()
+		{
+			FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color for the lines
+		}
+	)";
+
+	std::vector<const char*> testshaderSources = { testVertexShaderSource, testFragmentShaderSource };
+
+	Shader normalsShader(testshaderSources);
+
+
+	std::vector<const char*> geomSources = { testGeometryShaderSource };
+
+	normalsShader.AddGeometryShader(geomSources);
+
 	LightManager lightManager;
 
 	DirectionalLight dirLight = DirectionalLight(glm::vec3(0.0f, 0.0f, 0.0f), Color::White(), 10.0f);
@@ -176,9 +245,9 @@ int main()
 	lightManager.directionalLights.push_back(dirLight);
 	//lightManager.spotLights.push_back(spotLight);
 	
-	Mesh cube("CUBE", shader);
+	Mesh cube("CUBE", reflectiveShader);
 	Mesh sphere("UV_SPHERE", ds);
-	//Model backpack("../OpenGL/assets/backpack/backpack.obj", ds);
+	Model backpack("../OpenGL/assets/backpack/backpack.obj", ds);
 	Model dragon("../OpenGL/assets/dragon.obj", ds);
 
 	std::vector<GLuint> cubeMapReqs = CreateCubeMap();
@@ -195,7 +264,8 @@ int main()
 		void main()
 		{
 			TexCoords = aPos;
-			gl_Position = projection * view * vec4(aPos, 1.0);
+			vec4 pos = projection * view * vec4(aPos, 1.0);
+			gl_Position = pos.xyww; // Set w to 1.0 to avoid perspective divide (Forces skybox to always be rendered at the farthest depth)
 		}
 	)";
 
@@ -221,6 +291,73 @@ int main()
 
 	#pragma endregion  
 
+	GLuint VBO, VAO;
+	glGenBuffers(1, &VBO);
+	glGenVertexArrays(1, &VAO);
+
+	glBindVertexArray(VAO);
+
+	float vertices[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	};
+
+	// Upload vertex data to the GPU
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// Set vertex attributes
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // Bind to first attribute location
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(0); // Bind to first attribute location
+
+	glBindVertexArray(0); // Unbind VAO
+
+	reflectiveShader.Activate();
+	reflectiveShader.SetVec3("cameraPos", mainCamera.Position());
+	reflectiveShader.SetInt("skybox", 0);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		PollEvents();
@@ -235,20 +372,37 @@ int main()
 		/*-------- Render Scene --------*/
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		DrawSkyBox(cubeMapReqs[0], cubeMapReqs[1], cubeMapReqs[2], skyboxShader);
-
-
 		lightManager.ApplyLightsToShader(shader);
 
-		//dragon.Draw(mainCamera);
-
+		reflectiveShader.Activate();
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = mainCamera.ViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(mainCamera.FOV()), (float)mainCamera.screenWidth / (float)mainCamera.screenHeight, 0.1f, 100.0f);
+		reflectiveShader.SetMat4("model", model);
+		reflectiveShader.SetMat4("view", view);
+		reflectiveShader.SetMat4("projection", projection);
+		reflectiveShader.SetVec3("cameraPos", mainCamera.Position());
+		//glBindVertexArray(VAO);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapReqs[0]);
+		//glDrawArrays(GL_TRIANGLES, 0, 36); // Draw the cube
+		//glBindVertexArray(0);
+		
+		normalsShader.Activate();
+		normalsShader.SetMat4("projection", projection);
+		normalsShader.SetMat4("view", view);
+		normalsShader.SetMat4("model", model);
+		cube.SetShader(shader);
 		cube.Draw(mainCamera);
+		cube.SetShader(normalsShader);
+		cube.Draw(mainCamera);
+
 		//sphere.Draw(mainCamera);
 		for (int i = 0; i < UI::sceneObjects.size(); ++i)
 		{
 			UI::sceneObjects[i]->Render(mainCamera);
 		}
 
+		DrawSkyBox(cubeMapReqs[0], cubeMapReqs[1], cubeMapReqs[2], skyboxShader);
 		/*--------- End Render ---------*/
 		UI::EndFrame();
 
