@@ -13,7 +13,7 @@ void UI::RenderUI()
 	
 	ImGui::End();
 
-	// Scene Hierarchy
+	//------ Scene Hierarchy ------//
 
 	ImGui::Begin("Scene Hierarchy");
 	static bool newObject = false;
@@ -22,7 +22,7 @@ void UI::RenderUI()
 		clicked++;
 	if (clicked & 1)
 	{
-		Object* obj = new Object("Object");
+		Object* obj = new Object("New Object");
 		sceneObjects.push_back(obj);
 		obj->ID = sceneObjects.size() - 1;
 		clicked = 0;
@@ -35,7 +35,6 @@ void UI::RenderUI()
 	{
 		static ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 		static int selectedNode = -1;
-
 
 		// Leaf nodes
 		if (sceneObjects[i]->childObjects.size() == 0)
@@ -54,39 +53,23 @@ void UI::RenderUI()
 				currentObject = sceneObjects[i];
 			}
 		}
-		/*TODO: Full tree hierarchy
-		for (int j = 0; j < sceneObjects[i].childObjects.size(); j++)
-		{
-			// Disable the default "open on single-click behavior" + set Selected flag according to our selection.
-			// To alter selection we use IsItemClicked() && !IsItemToggledOpen(), so clicking on an arrow doesn't alter selection.
-			ImGuiTreeNodeFlags node_flags = base_flags;
-			const bool is_selected = (selection_mask & (1 << j)) != 0;
-			if (is_selected)
-				node_flags |= ImGuiTreeNodeFlags_Selected;
-			if (j < 3)
-			{
-				// Items 0..2 are Tree Node
-				bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)j, node_flags, "Selectable Node %d", j);
-				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-					node_clicked = j;
-
-				if (node_open)
-				{
-					ImGui::BulletText("Blah blah\nBlah Blah");
-					ImGui::SameLine();
-					ImGui::SmallButton("Button");
-					ImGui::TreePop();
-				}
-			}
-		}*/
+		// TODO: Full tree hierarchy
 	}
 	ImGui::End();
 
-	// Object Settings
+	//------ Object Settings ------//
 	ImGui::Begin("Object Settings");
 
 	if (currentObject)
 	{
+		char objectName[128] = "New Object";
+		strcpy_s(objectName, currentObject->name.c_str());
+		if (ImGui::InputText("Name", objectName, IM_ARRAYSIZE(objectName), ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			currentObject->name = objectName;
+		}
+
+		ImGui::NewLine();
 		ImGui::SeparatorText("Mesh");
 		static ImGuiComboFlags flags = 0;
 
@@ -220,7 +203,7 @@ void UI::RenderUI()
 
 	ImGui::End();
 
-	// Console
+	//------ Console ------//
 	ImGui::Begin("Console");
 
 	ImGui::End();
