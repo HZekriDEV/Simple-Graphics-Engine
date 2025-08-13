@@ -247,8 +247,8 @@ int main()
 	
 	Mesh cube("CUBE", reflectiveShader);
 	Mesh sphere("UV_SPHERE", ds);
-	Model backpack("../OpenGL/assets/backpack/backpack.obj", ds);
-	Model dragon("../OpenGL/assets/dragon.obj", ds);
+	//Model backpack("../OpenGL/assets/backpack/backpack.obj", ds);
+	//Model dragon("../OpenGL/assets/dragon.obj", ds);
 
 	std::vector<GLuint> cubeMapReqs = CreateCubeMap();
 	// Create shader for skybox

@@ -30,6 +30,7 @@ class Object
 		Object(const std::string name);
 		unsigned int ID;
 		std::string name;
+		std::string meshType = "CUBE"; // Default mesh type
 		std::vector<Object> childObjects;
 		Transform transform;
 		bool isPrimitive = true;

@@ -51,6 +51,7 @@ void UI::RenderUI()
 			{
 				selectedNode = i;
 				currentObject = sceneObjects[i];
+				std::cout << "Selected Object: " << currentObject->name << std::endl; 
 			}
 		}
 		// TODO: Full tree hierarchy
@@ -74,41 +75,42 @@ void UI::RenderUI()
 		static ImGuiComboFlags flags = 0;
 
 		// Pass in the preview value visible before opening the combo (it could technically be different contents or not pulled from items[])
-		const char* comboPreviewValue = (selected >= 0 && selected < IM_ARRAYSIZE(items)) ? items[selected] : "Select Type";
-
+		const char* comboPreviewValue = (selected >= 0 && selected < IM_ARRAYSIZE(items)) ? currentObject->meshType.c_str() : "Select Type";
+		
 		if (ImGui::BeginCombo("Type", comboPreviewValue, flags))
 		{
 			for (int n = 0; n < IM_ARRAYSIZE(items); n++)
 			{
 				const bool isSelected = (selected == n);
 				if (ImGui::Selectable(items[n], isSelected))
+				{
 					selected = n;
 
-				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
+					if (selected == 0)
+					{
+						Mesh cube = Mesh("CUBE");
+
+						currentObject->SetMesh(cube);
+						currentObject->meshType = "CUBE";
+					}
+					else if (selected == 1)
+					{
+						Mesh uvSphere = Mesh("UV_SPHERE");
+						currentObject->SetMesh(uvSphere);
+						currentObject->meshType = "UV_SPHERE";
+					}
+					else if (selected == 2)
+					{
+						currentObject->meshType = "CUSTOM";
+						currentObject->isPrimitive = false;
+					}
+				}
 			}
 			ImGui::EndCombo();
 		}
 
-		if (selected == 0)
+		if (selected == 2)
 		{
-			Mesh cube = Mesh("CUBE");
-
-			currentObject->SetMesh(cube);
-		}
-		else if (selected == 1)
-		{
-			Mesh uvSphere = Mesh("UV_SPHERE");
-			currentObject->SetMesh(uvSphere);
-		}
-		else if (selected == 2)
-		{
-			static std::string path = "";
-			ImGui::Text("Selected Model Path:");
-			ImGui::SameLine();
-			ImGui::Text("%s", path.c_str());
-
 			if (ImGui::Button("Choose Model File"))
 			{
 				// Open the file dialog
@@ -121,7 +123,7 @@ void UI::RenderUI()
 				// Check if the user selected a file
 				if (ImGuiFileDialog::Instance()->IsOk())
 				{
-					path = ImGuiFileDialog::Instance()->GetFilePathName();
+					static std::string path = ImGuiFileDialog::Instance()->GetFilePathName();
 					Model custom = Model(path);
 					currentObject->SetMesh(custom);
 					currentObject->isPrimitive = false;
