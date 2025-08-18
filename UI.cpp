@@ -92,12 +92,14 @@ void UI::RenderUI()
 
 						currentObject->SetMesh(cube);
 						currentObject->meshType = "CUBE";
+						currentObject->isPrimitive = true;
 					}
 					else if (selected == 1)
 					{
 						Mesh uvSphere = Mesh("UV_SPHERE");
 						currentObject->SetMesh(uvSphere);
 						currentObject->meshType = "UV_SPHERE";
+						currentObject->isPrimitive = true;
 					}
 					else if (selected == 2)
 					{
@@ -126,7 +128,6 @@ void UI::RenderUI()
 					static std::string path = ImGuiFileDialog::Instance()->GetFilePathName();
 					Model custom = Model(path);
 					currentObject->SetMesh(custom);
-					currentObject->isPrimitive = false;
 				}
 
 				// Close the dialog

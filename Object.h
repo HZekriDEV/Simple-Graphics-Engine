@@ -47,8 +47,8 @@ class Object
 
 	private:
 		Mesh m_mesh = Mesh("CUBE");
-		Model m_model = Model("../OpenGL/assets/dragon.obj");
-		Shader m_shader = Shader("../OpenGL/shaders/default_vertex.vert", "../OpenGL/shaders/default_fragment.frag");
+		Model m_model = Model("../OpenGL/assets/backpack.obj");
+		Shader m_shader = Shader("../OpenGL/shaders/vertex.vert", "../OpenGL/shaders/fragment.frag");
 };
 
 #endif
