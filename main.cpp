@@ -244,11 +244,6 @@ int main()
 
 	lightManager.directionalLights.push_back(dirLight);
 	//lightManager.spotLights.push_back(spotLight);
-	
-	Mesh cube("CUBE", reflectiveShader);
-	Mesh sphere("UV_SPHERE", ds);
-	//Model backpack("../OpenGL/assets/backpack/backpack.obj", ds);
-	//Model dragon("../OpenGL/assets/dragon.obj", ds);
 
 	std::vector<GLuint> cubeMapReqs = CreateCubeMap();
 	// Create shader for skybox
@@ -285,78 +280,8 @@ int main()
 	std::vector<const char*> shaderSources = { vertexShaderSource, fragmentShaderSource };
 
 	Shader skyboxShader(shaderSources);
-	sphere.SetPosition(glm::vec3(-2.0f, 0.0f, 0.0f));
-	cube.SetPosition(glm::vec3(1.0, 0.0, 0.0));
-	cube.SetRotation(30.0, glm::vec3(0.0, 1.0, 0.0));
 
 	#pragma endregion  
-
-	GLuint VBO, VAO;
-	glGenBuffers(1, &VBO);
-	glGenVertexArrays(1, &VAO);
-
-	glBindVertexArray(VAO);
-
-	float vertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-	};
-
-	// Upload vertex data to the GPU
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// Set vertex attributes
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0); // Bind to first attribute location
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(0); // Bind to first attribute location
-
-	glBindVertexArray(0); // Unbind VAO
-
-	reflectiveShader.Activate();
-	reflectiveShader.SetVec3("cameraPos", mainCamera.Position());
-	reflectiveShader.SetInt("skybox", 0);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -374,29 +299,6 @@ int main()
 		
 		lightManager.ApplyLightsToShader(shader);
 
-		reflectiveShader.Activate();
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = mainCamera.ViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(mainCamera.FOV()), (float)mainCamera.screenWidth / (float)mainCamera.screenHeight, 0.1f, 100.0f);
-		reflectiveShader.SetMat4("model", model);
-		reflectiveShader.SetMat4("view", view);
-		reflectiveShader.SetMat4("projection", projection);
-		reflectiveShader.SetVec3("cameraPos", mainCamera.Position());
-		//glBindVertexArray(VAO);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapReqs[0]);
-		//glDrawArrays(GL_TRIANGLES, 0, 36); // Draw the cube
-		//glBindVertexArray(0);
-		
-		normalsShader.Activate();
-		normalsShader.SetMat4("projection", projection);
-		normalsShader.SetMat4("view", view);
-		normalsShader.SetMat4("model", model);
-		cube.SetShader(shader);
-		cube.Draw(mainCamera);
-		cube.SetShader(normalsShader);
-		cube.Draw(mainCamera);
-
-		//sphere.Draw(mainCamera);
 		for (int i = 0; i < UI::sceneObjects.size(); ++i)
 		{
 			UI::sceneObjects[i]->Render(mainCamera);
