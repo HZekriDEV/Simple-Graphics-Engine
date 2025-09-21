@@ -113,6 +113,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,7 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="core\Camera.cpp" />
     <ClCompile Include="dependencies\ImGuiFileDialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="dependencies\imgui\imgui.cpp" />
     <ClCompile Include="dependencies\imgui\imgui_demo.cpp" />
@@ -147,34 +148,35 @@
     <ClCompile Include="dependencies\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="dependencies\imgui\imgui_tables.cpp" />
     <ClCompile Include="dependencies\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="glad.c" />
-    <ClCompile Include="gl_buffers.cpp" />
+    <ClCompile Include="core\glad.c" />
+    <ClCompile Include="core\gl_buffers.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="mesh.cpp" />
-    <ClCompile Include="model.cpp" />
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="stb_image.cpp" />
-    <ClCompile Include="texture.cpp" />
-    <ClCompile Include="UI.cpp" />
-    <ClCompile Include="UI.h" />
+    <ClCompile Include="core\Mesh.cpp" />
+    <ClCompile Include="core\Model.cpp" />
+    <ClCompile Include="core\Object.cpp" />
+    <ClCompile Include="core\Shader.cpp" />
+    <ClCompile Include="core\stb_image.cpp" />
+    <ClCompile Include="core\Texture.cpp" />
+    <ClCompile Include="core\UI.cpp" />
+    <ClCompile Include="core\UI.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="config.h" />
+    <ClInclude Include="core\Camera.h" />
+    <ClInclude Include="core\Color.h" />
+    <ClInclude Include="core\config.h" />
+    <ClInclude Include="core\Light.h" />
     <ClInclude Include="dependencies\ImGuiFileDialog\dirent\dirent.h" />
     <ClInclude Include="dependencies\ImGuiFileDialog\ImGuiFileDialog.h" />
     <ClInclude Include="dependencies\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="dependencies\ImGuiFileDialog\stb\stb_image.h" />
     <ClInclude Include="dependencies\ImGuiFileDialog\stb\stb_image_resize2.h" />
-    <ClInclude Include="gl_buffers.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="model.h" />
-    <ClInclude Include="Object.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="stb_image.h" />
-    <ClInclude Include="texture.h" />
+    <ClInclude Include="core\gl_buffers.h" />
+    <ClInclude Include="core\Mesh.h" />
+    <ClInclude Include="core\Model.h" />
+    <ClInclude Include="core\Object.h" />
+    <ClInclude Include="core\Shader.h" />
+    <ClInclude Include="core\stb_image.h" />
+    <ClInclude Include="core\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\fragment.frag" />
@@ -191,6 +193,8 @@
     <None Include="shaders\default_fragment.frag" />
     <None Include="shaders\default_vertex.vert" />
     <None Include="shaders\light_vertex.vert" />
+    <None Include="shaders\skybox.frag" />
+    <None Include="shaders\skybox.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -18,28 +18,28 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="core\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gl_buffers.cpp">
+    <ClCompile Include="core\gl_buffers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shader.cpp">
+    <ClCompile Include="core\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image.cpp">
+    <ClCompile Include="core\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
+    <ClCompile Include="core\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="core\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mesh.cpp">
+    <ClCompile Include="core\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="model.cpp">
+    <ClCompile Include="core\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dependencies\imgui\imgui.cpp">
@@ -63,13 +63,13 @@
     <ClCompile Include="dependencies\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UI.h">
+    <ClCompile Include="core\UI.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UI.cpp">
+    <ClCompile Include="core\UI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
+    <ClCompile Include="core\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dependencies\ImGuiFileDialog\ImGuiFileDialog.cpp">
@@ -77,34 +77,34 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config.h">
+    <ClInclude Include="core\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gl_buffers.h">
+    <ClInclude Include="core\gl_buffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
+    <ClInclude Include="core\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
+    <ClInclude Include="core\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
+    <ClInclude Include="core\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="core\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Color.h">
+    <ClInclude Include="core\Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
+    <ClInclude Include="core\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="model.h">
+    <ClInclude Include="core\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Object.h">
+    <ClInclude Include="core\Object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dependencies\ImGuiFileDialog\dirent\dirent.h">
@@ -120,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dependencies\ImGuiFileDialog\ImGuiFileDialogConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -146,5 +149,7 @@
     <None Include="shaders\light_vertex.vert" />
     <None Include="shaders\default_vertex.vert" />
     <None Include="shaders\default_fragment.frag" />
+    <None Include="shaders\skybox.vert" />
+    <None Include="shaders\skybox.frag" />
   </ItemGroup>
 </Project>

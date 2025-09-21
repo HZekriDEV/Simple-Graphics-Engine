@@ -22,16 +22,18 @@ bool firstMouse = true;
 
 Camera mainCamera = Camera(cameraPos, fov, pitch, yaw);
 /*---------------------------------*/
+LightManager lightManager;
+
 
 std::vector<GLuint> CreateCubeMap()
 {
 	// Load cubemap
-	std::string textureFaces[] = {"../OpenGL/textures/skybox/right.jpg",
-		"../OpenGL/textures/skybox/left.jpg",
-		"../OpenGL/textures/skybox/top.jpg",
-		"../OpenGL/textures/skybox/bottom.jpg",
-		"../OpenGL/textures/skybox/front.jpg",
-		"../OpenGL/textures/skybox/back.jpg"
+	std::string textureFaces[] = {"../LightMap Engine/textures/skybox/right.jpg",
+		"../LightMap Engine/textures/skybox/left.jpg",
+		"../LightMap Engine/textures/skybox/top.jpg",
+		"../LightMap Engine/textures/skybox/bottom.jpg",
+		"../LightMap Engine/textures/skybox/front.jpg",
+		"../LightMap Engine/textures/skybox/back.jpg"
 	};
 
 	GLuint textureID;
@@ -154,12 +156,11 @@ int main()
 	UI::InitImGui(window);
 
 	#pragma region INITIALIZE SCENE
-	Shader shader("../OpenGL/shaders/vertex.vert", "../OpenGL/shaders/fragment.frag");
-	Shader reflectiveShader("../OpenGL/shaders/reflective_vertex.vert", "../OpenGL/shaders/reflective_fragment.frag");
-	Shader ds("../OpenGL/shaders/default_vertex.vert", "../OpenGL/shaders/default_fragment.frag");
-	Shader lightShader("../OpenGL/shaders/light_vertex.vert", "../OpenGL/shaders/light_fragment.frag");
-
-	Texture diffuse("../OpenGL/textures/container2.png", true, true);
+	Shader shader("./shaders/vertex.vert", "./shaders/fragment.frag");
+	Shader reflectiveShader("./shaders/reflective_vertex.vert", "./shaders/reflective_fragment.frag");
+	Shader ds("./shaders/default_vertex.vert", "./shaders/default_fragment.frag");
+	Shader lightShader("./shaders/light_vertex.vert", "./shaders/light_fragment.frag"); 
+	Texture diffuse("./textures/container2.png", true, true);
 	Texture specular("../OpenGL/textures/container2_specular.png", true, true);
 
 	shader.AddTexture(diffuse);
@@ -168,77 +169,6 @@ int main()
 	shader.SetInt("material.specular", 1);
 	shader.SetFloat("material.shininess", 32.0f);
 
-	const char* testVertexShaderSource = R"(
-		#version 330 core
-		layout(location = 0) in vec3 aPos;
-		layout(location = 1) in vec3 aNormal;
-
-		out VS_OUT
-		{
-			vec3 normal;
-		} vs_out;	
-
-		uniform mat4 view;
-		uniform mat4 model;
-
-		void main()
-		{
-			gl_Position = view * model * vec4(aPos, 1.0); 
-			mat3 normalMatrix = mat3(transpose(inverse(view * model)));
-			vs_out.normal = normalize(vec3(vec4(normalMatrix * aNormal, 0.0)));
-		}
-	)";
-
-	const char* testGeometryShaderSource = R"(
-		#version 330 core
-		layout(triangles) in;
-		layout(line_strip, max_vertices = 6) out;
-		in VS_OUT
-		{
-			vec3 normal;
-		} gs_in[];
-
-		const float MAGNITUDE = 0.4;
-
-		uniform mat4 projection;
-
-		void GenerateLine(int index)
-		{
-			gl_Position = projection * gl_in[index].gl_Position;
-			EmitVertex();
-			gl_Position = projection * (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE);	
-			EmitVertex();	
-			EndPrimitive();
-		}
-
-		void main()
-		{
-			GenerateLine(0);
-			GenerateLine(1);
-			GenerateLine(2);
-		}
-	)";
-
-	const char* testFragmentShaderSource = R"(
-		#version 330 core
-		out vec4 FragColor;
-		void main()
-		{
-			FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color for the lines
-		}
-	)";
-
-	std::vector<const char*> testshaderSources = { testVertexShaderSource, testFragmentShaderSource };
-
-	Shader normalsShader(testshaderSources);
-
-
-	std::vector<const char*> geomSources = { testGeometryShaderSource };
-
-	normalsShader.AddGeometryShader(geomSources);
-
-	LightManager lightManager;
-
 	DirectionalLight dirLight = DirectionalLight(glm::vec3(0.0f, 0.0f, 0.0f), Color::White(), 10.0f);
 	//SpotLight spotLight = SpotLight(glm::vec3(-2.0f, 0.0f, 0.0f), glm::vec3(0.0, 0.0, 0.0)-glm::vec3(-2.0f, 0.0f, 0.0f) , Color::White(), 1.0f, 12.5f, 17.5f);
 
@@ -246,43 +176,39 @@ int main()
 	//lightManager.spotLights.push_back(spotLight);
 
 	std::vector<GLuint> cubeMapReqs = CreateCubeMap();
-	// Create shader for skybox
-	const char* vertexShaderSource = R"(
-		#version 330 core
-		layout(location = 0) in vec3 aPos;
-
-		out vec3 TexCoords;
-
-		uniform mat4 projection;
-		uniform mat4 view;
-
-		void main()
-		{
-			TexCoords = aPos;
-			vec4 pos = projection * view * vec4(aPos, 1.0);
-			gl_Position = pos.xyww; // Set w to 1.0 to avoid perspective divide (Forces skybox to always be rendered at the farthest depth)
-		}
-	)";
-
-	const char* fragmentShaderSource = R"(
-		#version 330 core
-		out vec4 FragColor;
-
-		in vec3 TexCoords;
-
-		uniform samplerCube skybox;
-
-		void main()
-		{
-			FragColor = texture(skybox, TexCoords);
-		}
-	)";
-	std::vector<const char*> shaderSources = { vertexShaderSource, fragmentShaderSource };
-
-	Shader skyboxShader(shaderSources);
+	Shader skyboxShader("./shaders/skybox.vert", "./shaders/skybox.frag");
 
 	#pragma endregion  
 
+	std::string outlineVert = R"(
+		#version 330 core
+		layout (location = 0) in vec3 aPos;
+
+		uniform mat4 model;
+		uniform mat4 view;
+		uniform mat4 projection;
+		void main()
+		{
+			gl_Position = projection * view * model * vec4(aPos, 1.0);
+		}
+	)";
+
+	std::string outlineFrag = R"(
+		#version 330 core
+
+		out vec4 FragColor;
+		
+		void main()
+		{
+			FragColor = vec4(1.0f, 0.784f, 0.0f, 1.0f);
+		}
+	)";
+	std::vector<const char*> shader_plaintext = { outlineVert.c_str(), outlineFrag.c_str() };
+	Shader outlineShader(shader_plaintext);
+	Mesh cube = Mesh("CUBE", shader);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
 	while (!glfwWindowShouldClose(window))
 	{
 		PollEvents();
@@ -291,21 +217,43 @@ int main()
 
 		ProcessInput(window);
 
-		UI::RenderUI();	// Render ImGui windows
+		//UI::RenderUI();	// Render ImGui windows
 
-		glEnable(GL_DEPTH_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 		/*-------- Render Scene --------*/
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glStencilMask(0x00); // Disable writing to the stencil buffer
+
 		lightManager.ApplyLightsToShader(shader);
+		DrawSkyBox(cubeMapReqs[0], cubeMapReqs[1], cubeMapReqs[2], skyboxShader);
 
 		for (int i = 0; i < UI::sceneObjects.size(); ++i)
 		{
 			UI::sceneObjects[i]->Render(mainCamera);
 		}
 
-		DrawSkyBox(cubeMapReqs[0], cubeMapReqs[1], cubeMapReqs[2], skyboxShader);
-		/*--------- End Render ---------*/
+		
+		glStencilFunc(GL_ALWAYS, 1, 0xFF); // All fragments should update the stencil buffer
+		glStencilMask(0xFF); // Enable writing to the stencil buffer
+		cube.SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+		Shader currentShader = cube.GetShader();
+		cube.Draw(mainCamera);
+
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // Pass test if stencil value is not 1
+		glStencilMask(0x00); // Disable writing to the stencil buffer
+		glDisable(GL_DEPTH_TEST);
+		outlineShader.Activate();
+		cube.SetShader(outlineShader);
+		cube.SetScale(glm::vec3(1.01f, 1.01f, 1.01f));
+		cube.Draw(mainCamera);
+		cube.SetShader(currentShader);
+		glStencilMask(0xFF); // Enable writing to the stencil buffer
+		glStencilFunc(GL_ALWAYS, 0, 0xFF); // All fragments should update the stencil buffer
+		glEnable(GL_DEPTH_TEST);
+
+		/*-------- Render Scene --------*/
+
 		UI::EndFrame();
 
 
@@ -323,15 +271,6 @@ void PollEvents()
 	float currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-}
-
-void RenderScene()
-{
-	// Clear screen
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
 }
 
 void ProcessInput(GLFWwindow* window)
