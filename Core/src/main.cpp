@@ -3,6 +3,7 @@
 #else
 import vulkan_hpp;
 #endif
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -10,25 +11,92 @@ import vulkan_hpp;
 #include <stdexcept>
 #include <cstdlib>
 
-class HelloTriangleApplication {
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+class HelloTriangleApplication 
+{
 public:
-    void run() {
+    void run() 
+    {
+        initWindow();
         initVulkan();
         mainLoop();
         cleanup();
     }
 
 private:
-    void initVulkan() {
+    GLFWwindow* window = nullptr;
+	vk::raii::Context context;
+    vk::raii::Instance instance = nullptr;
+
+    void initWindow()
+    {
+		glfwInit();
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+		window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+    }
+    void initVulkan() 
+    {
 		std::cout << "Initializing Vulkan..." << std::endl; 
+        createVulkanInstance();
     }
 
-    void mainLoop() {
-		std::cout << "Entering main loop..." << std::endl;
+    void mainLoop()
+    {
+        while (!glfwWindowShouldClose(window))
+        {
+			glfwPollEvents();
+        }
     }
 
-    void cleanup() {
-		std::cout << "Cleaning up resources..." << std::endl;
+    void cleanup() 
+    {
+		glfwDestroyWindow(window);
+		glfwTerminate();
+    }
+
+    void createVulkanInstance()
+    {
+        constexpr vk::ApplicationInfo appInfo{
+            .pApplicationName = "Helloo Triangle",
+            .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+            .pEngineName = "No Engine",
+            .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+            .apiVersion = vk::ApiVersion14
+        };
+
+		// Get required extensions from GLFW
+		uint32_t glfwExtensionCount = 0;
+		auto glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+		std::cout << "Available Vulkan extensions:" << std::endl;
+        auto extensionProperties = context.enumerateInstanceExtensionProperties();
+
+        for (const auto& extension : extensionProperties)
+        {
+            std::cout << "\t" << extension.extensionName << std::endl;
+		}
+
+        // Check if GLFW extensions are supported by Vulkan
+        for (uint32_t i = 0; i < glfwExtensionCount; i++)
+        {
+            if(std::ranges::none_of(extensionProperties, 
+                [glfwExtension = glfwExtensions[i]](auto const& extensionProperty)
+				{ return strcmp(extensionProperty.extensionName, glfwExtension) == 0; }))
+            {
+				throw std::runtime_error("Required GLFW extension not supported by Vulkan: " + std::string(glfwExtensions[i]));
+            }
+        }
+
+        vk::InstanceCreateInfo createInfo{
+            .pApplicationInfo = &appInfo,
+			.enabledExtensionCount = glfwExtensionCount,
+			.ppEnabledExtensionNames = glfwExtensions
+		};
+
+		instance = vk::raii::Instance(context, createInfo);
     }
 };
 
